@@ -1,0 +1,49 @@
+<html>
+
+    <head>
+
+        <title>Text Sentiment REST API Demo</title>
+
+        <!-- See: http://www.w3schools.com/jquery/default.asp -->
+        <script src="javascript/jquery-3.0.0.min.js"></script>
+
+        <!-- See: https://github.com/alexei/sprintf.js -->
+        <script src="javascript/sprintf.min.js"></script>
+
+        <script>
+
+            function query_api(file, contents)
+            {
+                // TODO query the API and fill in the "results-div"
+            }
+
+            $(function() {
+                $("#text-query-form").on("submit", function(e) {
+                    e.preventDefault();  //prevent form from submitting
+                    var text = $("#text-query-box").val();
+                    console.log(text)
+                });
+            });
+
+        </script>
+
+    </head>
+
+    <body>
+
+        <form id="text-query-form">
+
+            <label>Text Sentiment Query:</label>
+            <br>
+            <textarea id="text-query-box" rows="5" cols="50"></textarea>
+            <br>
+            <input type="Submit" />
+
+        </form>
+
+        <div id="results-div">
+        </div>
+
+    </body>
+
+</html>
