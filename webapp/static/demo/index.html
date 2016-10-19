@@ -12,16 +12,31 @@
 
         <script>
 
-            function query_api(file, contents)
+            function query_api(text)
             {
-                // TODO query the API and fill in the "results-div"
+                $.post("/v1.0.0/vader_sentiment",
+                {
+                    text: text,
+                    word_level: false,
+                    sentence_level: false,
+                    paragraph_level: false,
+                    document_level: true
+                },
+                function(data) {
+                    console.log("Received response:");
+                    console.log(data);
+                    $("#sentiment-score").text(data.document.compound);
+                    $("#process-time").text(data.process_time);
+                    $("#document-echo").text(data.document.text);
+                });
             }
 
             $(function() {
                 $("#text-query-form").on("submit", function(e) {
                     e.preventDefault();  //prevent form from submitting
                     var text = $("#text-query-box").val();
-                    console.log(text)
+                    console.log("Will query API with text: " + text)
+                    query_api(text)
                 });
             });
 
@@ -41,7 +56,12 @@
 
         </form>
 
-        <div id="results-div">
+        <div>
+            Sentiment Score: <span id="sentiment-score"></span>
+            <br><br>
+            Processing Time (ms): <span id="process-time"></span>
+            <br><br>
+            Document: <span id="document-echo"></span>
         </div>
 
     </body>

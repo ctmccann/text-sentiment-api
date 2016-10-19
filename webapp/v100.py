@@ -87,22 +87,22 @@ def vader_sentiment():
         required: true
         type: string
       - name: word_level
-        in: query
+        in: formData
         description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the word-level
         required: false
         type: boolean
       - name: sentence_level
-        in: query
+        in: formData
         description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the sentence-level
         required: false
         type: boolean
       - name: paragraph_level
-        in: query
+        in: formData
         description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the paragraph-level
         required: false
         type: boolean
       - name: document_level
-        in: query
+        in: formData
         description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the document-level
         required: false
         type: boolean
@@ -168,10 +168,10 @@ def vader_sentiment():
     text = request.form.get('text')
 
     # Grab the optional parameters.
-    word_level      = (request.args.get('word_level',      'true') == 'true')
-    sentence_level  = (request.args.get('sentence_level',  'true') == 'true')
-    paragraph_level = (request.args.get('paragraph_level', 'true') == 'true')
-    document_level  = (request.args.get('document_level',  'true') == 'true')
+    word_level      = (request.form.get('word_level',      'true') == 'true')
+    sentence_level  = (request.form.get('sentence_level',  'true') == 'true')
+    paragraph_level = (request.form.get('paragraph_level', 'true') == 'true')
+    document_level  = (request.form.get('document_level',  'true') == 'true')
 
     # Build the response dictionary object.
     response_dict = {}
