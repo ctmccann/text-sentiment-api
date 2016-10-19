@@ -145,5 +145,18 @@ def table():
     return jsonify(d)
 
 
+@blueprint.after_request
+def set_poper_headers(response):
+    '''
+    By default the browser will flip out if the API is on a remote domain
+    and doesn't set the proper Access-Control-Allow-Origin header.
+    This function fixes that so that the browsers are happy. This function
+    will add the proper header to ALL responses returned from this
+    blueprint.
+    '''
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+
 from app import app
 app.register_blueprint(blueprint, url_prefix='/'+VERSION_STR)

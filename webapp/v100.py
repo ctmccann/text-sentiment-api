@@ -194,8 +194,22 @@ def vader_sentiment():
     # Store this request/response pair to the database for our own records.
     insert_into_db(request, response_dict, process_time_ms)
 
-    # TODO add 'Access-Control-Allow-Origin' header to the response
-    return jsonify(response_dict)
+    # Return the JSON encoded response Flask object.
+    response = jsonify(response_dict)
+    return response
+
+
+@blueprint.after_request
+def set_poper_headers(response):
+    '''
+    By default the browser will flip out if the API is on a remote domain
+    and doesn't set the proper Access-Control-Allow-Origin header.
+    This function fixes that so that the browsers are happy. This function
+    will add the proper header to ALL responses returned from this
+    blueprint.
+    '''
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 
 from app import app
