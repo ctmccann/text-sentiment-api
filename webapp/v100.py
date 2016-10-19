@@ -132,9 +132,28 @@ def vader_sentiment():
               type: number
               description: the sentiment score of this snippet, ranging in [-1, 1]
     '''
-    # TODO
+    if 'text' not in request.form:
+        raise Error(1412, "You must pass the 'text' parameter to the vader_sentiment endpoint")
     text = request.form.get('text')
-    return jsonify({'result': text})
+
+    word_level      = (request.args.get('word_level',      'true') == 'true')
+    sentence_level  = (request.args.get('sentence_level',  'true') == 'true')
+    paragraph_level = (request.args.get('paragraph_level', 'true') == 'true')
+    document_level  = (request.args.get('document_level',  'true') == 'true')
+
+    response = {}
+
+    # TODO nltk stuff
+    response['text-echo'] = text
+    response['word-level-echo'] = word_level
+    response['sentence-level-echo'] = sentence_level
+    response['paragraph-level-echo'] = paragraph_level
+    response['document-level-echo'] = document_level
+
+    # TODO add 'Access-Control-Allow-Origin' header to the response
+
+    insert_into_db(request, response)
+    return jsonify(response)
 
 
 from app import app

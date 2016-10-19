@@ -41,7 +41,7 @@ def init():
             timestamp TEXT,                     -- time when inserted
             parameters TEXT,                    -- JSON paramerters of this query
             response TEXT,                      -- JSON response (query's answer)
-            process_time REAL,                  -- processing time in milliseconds
+            process_time REAL                   -- processing time in milliseconds
         );
         ''')
 
