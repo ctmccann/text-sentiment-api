@@ -43,6 +43,7 @@ def vader_sentiment():
     This endpoint accepts text input. It analyzes the sentiment of the
     text using the Vader Sentiment tool. For more detail on the Vader tool,
     see https://github.com/cjhutto/vaderSentiment
+
     The sentiment of the text is evaluated at several levels: the word level,
     the sentence level, the paragraph level, and the entire document level.
     The sentiment results are returned as JSON.
@@ -86,10 +87,6 @@ def vader_sentiment():
         description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the document-level
         required: false
         type: boolean
-
-    consumes:
-      - multipart/form-data
-      - application/x-www-form-urlencoded
 
     definitions:
       - schema:
@@ -136,6 +133,8 @@ def vader_sentiment():
               description: the sentiment score of this snippet, ranging in [-1, 1]
     '''
     # TODO
+    text = request.form.get('text')
+    return jsonify({'result': text})
 
 
 from app import app
