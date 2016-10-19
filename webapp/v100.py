@@ -9,6 +9,26 @@ from flask import Blueprint, request, jsonify, json, g
 blueprint = Blueprint(VERSION_STR, __name__)
 
 
+import nltk.data
+from nltk import tokenize
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+VADER_SENTIMENT_ANALYZER = SentimentIntensityAnalyzer()
+WORD_TOKENIZER = tokenize.TweetTokenizer()
+SENT_TOKENIZER = nltk.data.load('tokenizers/punkt/english.pickle')
+PARA_TOKENIZER = tokenize.BlanklineTokenizer()
+
+
+def score_word(word):
+    return VADER_SENTIMENT_ANALYZER.lexicon.get(word, 0.0)
+
+
+def compute_sentiment_record(text):
+    sentiment_record = {'text': text}
+    sentiment_record.update(VADER_SENTIMENT_ANALYZER.polarity_scores(text))
+    return sentiment_record
+
+
 def r_remove_key(o, keys_to_remove):
     if hasattr(o, 'iteritems'):
         return {k: r_remove_key(v, keys_to_remove) \
@@ -20,8 +40,7 @@ def r_remove_key(o, keys_to_remove):
         return o
 
 
-def insert_into_db(request, response_dict):
-    process_time_ms = (time.time() - g.start_time) * 1000.0
+def insert_into_db(request, response_dict, process_time_ms):
     parameters_dict = {'args': request.args,
                        'form': request.form,
                        'cookies': request.cookies,
@@ -100,20 +119,18 @@ def vader_sentiment():
               $ref: '#/definitions/SentimentRecord'
               description: the sentiment of the entire document
             words:
-              type: array
-              items:
-                $ref: '#/definitions/SentimentRecord'
-              description: an array of SentimentRecord objects, one item for each word in the document
+              type: object
+              description: an object having the sentiment of each word in the document, duplicates removed
             sentences:
               type: array
               items:
                 $ref: '#/definitions/SentimentRecord'
-              description: an array of SentimentRecord objects, one item for each sentence in the document
+              description: one object for each sentence in the document
             paragraphs:
               type: array
               items:
                 $ref: '#/definitions/SentimentRecord'
-              description: an array of SentimentRecord objects, one item for each paragraph in the document
+              description: one object for each paragraph in the document
             process_time:
               type: number
               description: The processing time in milliseconds taken to build this object
@@ -123,37 +140,62 @@ def vader_sentiment():
           description: The sentiment of a text snippet
           required:
             - text
-            - sentiment
+            - neg
+            - neu
+            - pos
+            - compound
           properties:
             text:
               type: string
               description: echo the text of this snippet
-            sentiment:
+            neg:
               type: number
-              description: the sentiment score of this snippet, ranging in [-1, 1]
+              description: the negative component of the sentiment
+            neu:
+              type: number
+              description: the neutral component of the sentiment
+            pos:
+              type: number
+              description: the positive component of the sentiment
+            compound:
+              type: number
+              description: the compound sentiment in the range [-1, 1]
     '''
+
+    # Grab the 'text' parameter, and error if the user didn't give it!
     if 'text' not in request.form:
         raise Error(1412, "You must pass the 'text' parameter to the vader_sentiment endpoint")
     text = request.form.get('text')
 
+    # Grab the optional parameters.
     word_level      = (request.args.get('word_level',      'true') == 'true')
     sentence_level  = (request.args.get('sentence_level',  'true') == 'true')
     paragraph_level = (request.args.get('paragraph_level', 'true') == 'true')
     document_level  = (request.args.get('document_level',  'true') == 'true')
 
-    response = {}
+    # Build the response dictionary object.
+    response_dict = {}
+    if word_level:
+        vocab = set(word.lower() for word in WORD_TOKENIZER.tokenize(text))
+        response_dict['words'] = {word: score_word(word) for word in vocab}
+    if sentence_level:
+        response_dict['sentences'] = [compute_sentiment_record(sentence)
+                for sentence in SENT_TOKENIZER.tokenize(text)]
+    if paragraph_level:
+        response_dict['paragraphs'] = [compute_sentiment_record(paragraph)
+                for paragraph in PARA_TOKENIZER.tokenize(text)]
+    if document_level:
+        response_dict['document'] = compute_sentiment_record(text)
 
-    # TODO nltk stuff
-    response['text-echo'] = text
-    response['word-level-echo'] = word_level
-    response['sentence-level-echo'] = sentence_level
-    response['paragraph-level-echo'] = paragraph_level
-    response['document-level-echo'] = document_level
+    # Copute the processing time required to serve this reqeust.
+    process_time_ms = (time.time() - g.start_time) * 1000.0
+    response_dict['process_time'] = process_time_ms
+
+    # Store this request/response pair to the database for our own records.
+    insert_into_db(request, response_dict, process_time_ms)
 
     # TODO add 'Access-Control-Allow-Origin' header to the response
-
-    insert_into_db(request, response)
-    return jsonify(response)
+    return jsonify(response_dict)
 
 
 from app import app
