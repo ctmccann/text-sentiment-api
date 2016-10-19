@@ -33,16 +33,19 @@ def init():
     conn = sqlite3.connect(DB_FILE_NAME)
     c = conn.cursor()
 
-    # TODO add index on timestamp
-
     c.execute('''
-        CREATE TABLE queries (
+        CREATE TABLE IF NOT EXISTS queries (
             query_id INTEGER PRIMARY KEY ASC,
             timestamp TEXT,                     -- time when inserted
             parameters TEXT,                    -- JSON paramerters of this query
             response TEXT,                      -- JSON response (query's answer)
             process_time REAL                   -- processing time in milliseconds
         );
+        ''')
+
+    c.execute('''
+        CREATE INDEX IF NOT EXISTS queries_timestamp
+        ON queries(timestamp);
         ''')
 
     conn.commit()
