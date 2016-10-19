@@ -72,12 +72,15 @@ def get_avg_process_time(request_interval):
     conn = sqlite3.connect(DB_FILE_NAME)
     c = conn.cursor()
     res = list(c.execute('''
-        SELECT AVG(process_time)
+        SELECT process_time
         FROM queries
-        ORDER BY query_id DESC
-        LIMIT 4'''))                # TODO fix this
-    val = res[0][0]
-    if val is None:
+        ORDER BY timestamp DESC
+        LIMIT ?''',
+        (request_interval, )))
+    if len(res) > 0:
+        val = sum(rec[0] for rec in res) * 1.0
+        val /= len(res)
+    else:
         val = 0.0
     return val
 
