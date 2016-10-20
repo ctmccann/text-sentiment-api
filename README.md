@@ -17,7 +17,30 @@ If you want to use this repository as a starting point for _your_ API, then you 
 1. Change the demo (see [the demo directory](webapp/static/demo/)).
 1. Modify this [README.md](README.md) file.
 
-## Simple Demo
+## Simple Demos
+
+**Demo with Python:**
+
+```python
+import requests
+from pprint import pprint
+
+url = 'https://sentiment.rhobota.com/v1.0.0/vader_sentiment'
+
+params = {'text': 'Ryan is great, despite what Scott C says. Scott C is lame though.'}
+
+r = requests.post(url, data = params)
+
+pprint(r.json())
+```
+
+**Demo with `curl`**
+
+```
+#> curl -X POST -d text='This is a test query. I hope it works!' 'https://sentiment.rhobota.com/v1.0.0/vader_sentiment'
+```
+
+**Demo with JavaScript**
 
 You can see how to use this text sentiment REST API within JavaScript (leveraging jQuery) in [this simple demo](https://sentiment.rhobota.com/static/demo/index.html).
 
