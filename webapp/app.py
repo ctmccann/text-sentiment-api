@@ -1,6 +1,6 @@
-APP_NAME = 'Text Sentiment REST API'
+APP_NAME = 'Destiny REST API'
 
-APP_DESCRIPTION = 'Get the sentiment of your text document with this easy REST API.'
+APP_DESCRIPTION = 'Discover places to go in Austin with this easy REST API.'
 
 
 import time

@@ -9,24 +9,24 @@ from flask import Blueprint, request, jsonify, json, g
 blueprint = Blueprint(VERSION_STR, __name__)
 
 
-import nltk.data
-from nltk import tokenize
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+#import nltk.data
+#from nltk import tokenize
+#from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-VADER_SENTIMENT_ANALYZER = SentimentIntensityAnalyzer()
-WORD_TOKENIZER = tokenize.TweetTokenizer()
-SENT_TOKENIZER = nltk.data.load('tokenizers/punkt/english.pickle')
-PARA_TOKENIZER = tokenize.BlanklineTokenizer()
-
-
-def score_word(word):
-    return VADER_SENTIMENT_ANALYZER.lexicon.get(word, 0.0)
+#VADER_SENTIMENT_ANALYZER = SentimentIntensityAnalyzer()
+#WORD_TOKENIZER = tokenize.TweetTokenizer()
+#SENT_TOKENIZER = nltk.data.load('tokenizers/punkt/english.pickle')
+#PARA_TOKENIZER = tokenize.BlanklineTokenizer()
 
 
-def compute_sentiment_record(text):
-    sentiment_record = {'text': text}
-    sentiment_record.update(VADER_SENTIMENT_ANALYZER.polarity_scores(text))
-    return sentiment_record
+#def score_word(word):
+#    return VADER_SENTIMENT_ANALYZER.lexicon.get(word, 0.0)
+
+
+#def compute_sentiment_record(text):
+#    sentiment_record = {'text': text}
+#    sentiment_record.update(VADER_SENTIMENT_ANALYZER.polarity_scores(text))
+#    return sentiment_record
 
 
 def r_remove_key(o, keys_to_remove):
@@ -58,14 +58,7 @@ def insert_into_db(request, response_dict, process_time_ms):
 @blueprint.route('/vader_sentiment', methods=['POST'])
 def vader_sentiment():
     '''
-    Analyze text sentiment using Vader
-    This endpoint accepts text input. It analyzes the sentiment of the
-    text using the Vader Sentiment tool. For more detail on the Vader tool,
-    see https://github.com/cjhutto/vaderSentiment
-
-    The sentiment of the text is evaluated at several levels: the word level,
-    the sentence level, the paragraph level, and the entire document level.
-    The sentiment results are returned as JSON.
+	This API takes in a text string of interests/moods and returns 3 location names and lat/long of said places.
     ---
     tags:
       - v1.0.0
@@ -83,29 +76,9 @@ def vader_sentiment():
     parameters:
       - name: text
         in: formData
-        description: The text document which shall be analyzed for sentiment at various levels
+        description: The text document which shall be analyzed for places to visit.
         required: true
         type: string
-      - name: word_level
-        in: formData
-        description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the word-level
-        required: false
-        type: boolean
-      - name: sentence_level
-        in: formData
-        description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the sentence-level
-        required: false
-        type: boolean
-      - name: paragraph_level
-        in: formData
-        description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the paragraph-level
-        required: false
-        type: boolean
-      - name: document_level
-        in: formData
-        description: A boolean input flag (default=true) indicating whether or not to compute and return the sentiment at the document-level
-        required: false
-        type: boolean
 
     definitions:
       - schema:
@@ -164,28 +137,39 @@ def vader_sentiment():
 
     # Grab the 'text' parameter, and error if the user didn't give it!
     if 'text' not in request.form:
-        raise Error(1412, "You must pass the 'text' parameter to the vader_sentiment endpoint")
+        raise Error(1412, "You must pass the 'text' parameter to the Destiny endpoint")
     text = request.form.get('text')
 
     # Grab the optional parameters.
-    word_level      = (request.form.get('word_level',      'true') == 'true')
-    sentence_level  = (request.form.get('sentence_level',  'true') == 'true')
-    paragraph_level = (request.form.get('paragraph_level', 'true') == 'true')
-    document_level  = (request.form.get('document_level',  'true') == 'true')
+#    word_level      = (request.form.get('word_level',      'true') == 'true')
+#    sentence_level  = (request.form.get('sentence_level',  'true') == 'true')
+#    paragraph_level = (request.form.get('paragraph_level', 'true') == 'true')
+#    document_level  = (request.form.get('document_level',  'true') == 'true')
 
     # Build the response dictionary object.
     response_dict = {}
-    if word_level:
-        vocab = set(word.lower() for word in WORD_TOKENIZER.tokenize(text))
-        response_dict['words'] = {word: score_word(word) for word in vocab}
-    if sentence_level:
-        response_dict['sentences'] = [compute_sentiment_record(sentence)
-                for sentence in SENT_TOKENIZER.tokenize(text)]
-    if paragraph_level:
-        response_dict['paragraphs'] = [compute_sentiment_record(paragraph)
-                for paragraph in PARA_TOKENIZER.tokenize(text)]
-    if document_level:
-        response_dict['document'] = compute_sentiment_record(text)
+    response_dict['venue1'] = "barbarella"
+    response_dict['lat1'] = "30.2671529"
+    response_dict['long1'] = "-97.7366477"
+    response_dict['venue2'] = "franklin-bbq"
+    response_dict['lat2'] = "30.2701188"
+    response_dict['long2'] = "-97.7312727"
+    response_dict['venue3'] = "galvanize"
+    response_dict['lat3'] = "30.2653263"
+    response_dict['long3'] = "-97.7495499"
+
+
+#    if word_level:
+#        vocab = set(word.lower() for word in WORD_TOKENIZER.tokenize(text))
+#        response_dict['words'] = {word: score_word(word) for word in vocab}
+#    if sentence_level:
+#        response_dict['sentences'] = [compute_sentiment_record(sentence)
+#                for sentence in SENT_TOKENIZER.tokenize(text)]
+#    if paragraph_level:
+#        response_dict['paragraphs'] = [compute_sentiment_record(paragraph)
+#                for paragraph in PARA_TOKENIZER.tokenize(text)]
+#    if document_level:
+#        response_dict['document'] = compute_sentiment_record(text)
 
     # Copute the processing time required to serve this reqeust.
     process_time_ms = (time.time() - g.start_time) * 1000.0
