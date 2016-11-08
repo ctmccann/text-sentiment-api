@@ -55,8 +55,8 @@ def insert_into_db(request, response_dict, process_time_ms):
                     process_time_ms)
 
 
-@blueprint.route('/vader_sentiment', methods=['POST'])
-def vader_sentiment():
+@blueprint.route('/get_recommendations', methods=['POST'])
+def get_recommendations():
     '''
 	This API takes in a text string of interests/moods and returns 3 location names and lat/long of said places.
     ---
